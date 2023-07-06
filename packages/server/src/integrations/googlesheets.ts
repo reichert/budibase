@@ -24,6 +24,7 @@ import { cache, configs, context, HTTPError } from "@budibase/backend-core"
 import { dataFilters, utils } from "@budibase/shared-core"
 import { GOOGLE_SHEETS_PRIMARY_KEY } from "../constants"
 import sdk from "../sdk"
+import { google } from 'googleapis'
 
 interface GoogleSheetsConfig {
   spreadsheetId: string
@@ -594,6 +595,75 @@ export async function setupCreationAuth(datasouce: GoogleSheetsConfig) {
 
     datasouce.auth = tokens.tokens
     delete datasouce.continueSetupId
+  }
+}
+const fetchAccessToken = async (
+  payload: AuthTokenRequest
+): Promise<AuthTokenResponse> => {
+  const response = await fetch("https://www.googleapis.com/oauth2/v4/token", {
+    method: "POST",
+    body: JSON.stringify({
+      ...payload,
+      grant_type: "refresh_token",
+    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+
+  const json = await response.json()
+
+  if (response.status !== 200) {
+    throw new Error(
+      `Error authenticating with google sheets. ${json.error_description}`
+    )
+  }
+
+  return json
+}
+
+export async function getSheets(continueSetupId: string, query: string) {
+  const appId = context.getAppId()
+  const tokens = await cache.get(
+    `datasource:creation:${appId}:google:${continueSetupId}`
+  )
+
+  const auth = tokens.tokens
+
+  // Initialise oAuth client
+  let googleConfig = await configs.getGoogleDatasourceConfig()
+  if (!googleConfig) {
+    throw new HTTPError("Google config not found", 400)
+  }
+
+  const oauthClient = new OAuth2Client({
+    clientId: googleConfig.clientID,
+    clientSecret: googleConfig.clientSecret,
+  })
+
+  const tokenResponse = await fetchAccessToken({
+    client_id: googleConfig.clientID,
+    client_secret: googleConfig.clientSecret,
+    refresh_token: auth.refreshToken,
+  })
+
+  oauthClient.setCredentials({
+    refresh_token: auth.refreshToken,
+    access_token: tokenResponse.access_token,
+  })
+
+  const service = google.drive({ version: 'v3', auth: oauthClient });
+
+  try {
+    const fileNameQuery = query ? `and name contains '${query}'` : '';
+    const response = await service.files.list({
+      q: "mimeType = 'application/vnd.google-apps.spreadsheet'" + fileNameQuery,
+      fields: 'nextPageToken, files(id, name, webViewLink)',
+      spaces: 'drive',
+    });
+    return response
+  } catch (e) {
+    console.log(e)
   }
 }
 

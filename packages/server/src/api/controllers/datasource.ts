@@ -414,6 +414,10 @@ export async function query(ctx: UserCtx) {
   }
 }
 
+export async function getGoogleSheets(ctx: UserCtx) {
+  ctx.body = await getSheets(ctx.params.googleId, ctx.query.query)
+}
+
 export async function getExternalSchema(ctx: UserCtx) {
   const datasource = await sdk.datasources.get(ctx.params.datasourceId)
   const enrichedDatasource = await getAndMergeDatasource(datasource)

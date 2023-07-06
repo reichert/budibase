@@ -42,7 +42,7 @@ export async function preAuth(
   }
 
   return passport.authenticate(strategy, {
-    scope: ["profile", "email", "https://www.googleapis.com/auth/spreadsheets"],
+    scope: ["profile", "email", "https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"],
     accessType: "offline",
     prompt: "consent",
   })(ctx, next)

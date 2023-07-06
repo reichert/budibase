@@ -89,4 +89,10 @@ export const buildDatasourceEndpoints = API => ({
       url: `/api/datasources/${datasourceId}/schema/external`,
     })
   },
+
+  fetchGoogleSheets: async ({ googleId, query = null }) => {
+    return await API.get({
+      url: `/api/datasources/googleSheets/${googleId}?query=${query}`,
+    })
+  },
 })

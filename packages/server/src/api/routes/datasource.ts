@@ -15,6 +15,11 @@ router
     authorized(permissions.BUILDER),
     datasourceController.fetch
   )
+  .get(
+    "/api/datasources/googleSheets/:googleId",
+    authorized(permissions.BUILDER),
+    datasourceController.getGoogleSheets
+  )
   .post(
     "/api/datasources/verify",
     authorized(permissions.BUILDER),
