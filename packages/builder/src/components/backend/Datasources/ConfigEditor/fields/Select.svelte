@@ -5,7 +5,7 @@
   export let name
   export let value
   export let error
-  export let config
+  export let options
 </script>
 
 <div class="form-row">
@@ -13,7 +13,7 @@
   <Select
     on:blur
     on:change
-    options={config.options}
+    options={options}
     {type}
     value={value || undefined}
     {error}

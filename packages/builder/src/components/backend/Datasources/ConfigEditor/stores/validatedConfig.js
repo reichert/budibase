@@ -115,7 +115,7 @@ export const createValidatedConfigStore = (integration, config) => {
           name: capitalise(properties.display || key),
           type: properties.type,
           hidden: properties.hidden,
-          config: properties.config,
+          options: properties.config?.options,
         })
       })
 

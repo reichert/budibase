@@ -10,7 +10,7 @@ export const createOnGoogleAuthStore = () => {
 
     return callback => {
       if ($integrations && id) {
-        API.fetchGoogleSheets({ googleId: id, query: '' }).then(r => console.log(r)).catch(e => console.log(e))
+        //API.fetchGoogleSheets({ googleId: id, query: '' }).then(r => console.log(r)).catch(e => console.log(e))
         const integration = {
           name: IntegrationTypes.GOOGLE_SHEETS,
           ...$integrations[IntegrationTypes.GOOGLE_SHEETS],
