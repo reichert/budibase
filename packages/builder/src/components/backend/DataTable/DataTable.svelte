@@ -2,7 +2,7 @@
   import { datasources, tables } from "stores/backend"
   import EditRolesButton from "./buttons/EditRolesButton.svelte"
   import { TableNames } from "constants"
-  import { Grid } from "@budibase/frontend-core"
+  import { Grid, Kanban } from "@budibase/frontend-core"
   import { API } from "api"
   import GridAddColumnModal from "components/backend/DataTable/modals/grid/GridCreateColumnModal.svelte"
   import GridCreateEditRowModal from "components/backend/DataTable/modals/grid/GridCreateEditRowModal.svelte"
@@ -14,6 +14,8 @@
   import GridManageAccessButton from "components/backend/DataTable/buttons/grid/GridManageAccessButton.svelte"
   import GridRelationshipButton from "components/backend/DataTable/buttons/grid/GridRelationshipButton.svelte"
   import GridEditColumnModal from "components/backend/DataTable/modals/grid/GridEditColumnModal.svelte"
+  import { Tabs, Tab } from "@budibase/bbui"
+  import KanbanCreateEditRowModal from "components/backend/DataTable/modals/kanban/KanbanCreateEditRowModal.svelte"
 
   const userSchemaOverrides = {
     firstName: { displayName: "First name", disabled: true },
@@ -41,41 +43,64 @@
 </script>
 
 <div class="wrapper">
-  <Grid
-    {API}
-    tableId={id}
-    allowAddRows={!isUsersTable}
-    allowDeleteRows={!isUsersTable}
-    schemaOverrides={isUsersTable ? userSchemaOverrides : null}
-    showAvatars={false}
-    on:updatetable={handleGridTableUpdate}
-  >
-    <svelte:fragment slot="filter">
-      <GridFilterButton />
-    </svelte:fragment>
-    <svelte:fragment slot="controls">
-      {#if isInternal}
-        <GridCreateViewButton />
-      {/if}
-      <GridManageAccessButton />
-      {#if !isInternal}
-        <GridRelationshipButton />
-      {/if}
-      {#if isUsersTable}
-        <EditRolesButton />
-      {:else}
-        <GridImportButton />
-      {/if}
-      <GridExportButton />
-      <GridAddColumnModal />
-      <GridEditColumnModal />
-      {#if isUsersTable}
-        <GridEditUserModal />
-      {:else}
-        <GridCreateEditRowModal />
-      {/if}
-    </svelte:fragment>
-  </Grid>
+  <Tabs selected="Grid">
+    <Tab icon="Table" title="Grid">
+      <div class="tab-content">
+        <Grid
+          {API}
+          tableId={id}
+          allowAddRows={!isUsersTable}
+          allowDeleteRows={!isUsersTable}
+          schemaOverrides={isUsersTable ? userSchemaOverrides : null}
+          showAvatars={false}
+          on:updatetable={handleGridTableUpdate}
+        >
+          <svelte:fragment slot="filter">
+            <GridFilterButton />
+          </svelte:fragment>
+          <svelte:fragment slot="controls">
+            {#if isInternal}
+              <GridCreateViewButton />
+            {/if}
+            <GridManageAccessButton />
+            {#if !isInternal}
+              <GridRelationshipButton />
+            {/if}
+            {#if isUsersTable}
+              <EditRolesButton />
+            {:else}
+              <GridImportButton />
+            {/if}
+            <GridExportButton />
+            <GridAddColumnModal />
+            <GridEditColumnModal />
+            {#if isUsersTable}
+              <GridEditUserModal />
+            {:else}
+              <GridCreateEditRowModal />
+            {/if}
+          </svelte:fragment>
+        </Grid>
+      </div>
+    </Tab>
+    <Tab icon="ViewColumn" title="Kanban">
+      <div class="tab-content">
+        <Kanban
+          {API}
+          tableId={id}
+          allowAddRows={!isUsersTable}
+          allowDeleteRows={!isUsersTable}
+          schemaOverrides={isUsersTable ? userSchemaOverrides : null}
+          showAvatars={false}
+          on:updatetable={handleGridTableUpdate}
+        >
+          <svelte:fragment slot="controls">
+            <KanbanCreateEditRowModal />
+          </svelte:fragment>
+        </Kanban>
+      </div>
+    </Tab>
+  </Tabs>
 </div>
 
 <style>
@@ -86,5 +111,17 @@
     flex-direction: column;
     background: var(--background);
     overflow: hidden;
+  }
+  .wrapper :global(.spectrum-Tabs-content) {
+    margin: 0;
+    flex: 1 1 auto;
+    position: relative;
+  }
+  .tab-content {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
   }
 </style>
