@@ -33,6 +33,7 @@ export const deriveStores = context => {
   })
 
   const refreshStack = async stack => {
+    console.log("refresh", stack)
     const store = get(stackRowStoreMap)[stack]
     await store?.fetch.refresh()
   }

@@ -4,13 +4,19 @@
   import { Modal, notifications } from "@budibase/bbui"
   import { cloneDeep } from "lodash/fp"
 
-  const { subscribe, stackColumn, rows } = getContext("kanban")
+  const { subscribe, stackColumn, rows, API } = getContext("kanban")
 
   let modal
   let row
 
-  const deleteRow = () => {
+  const deleteRow = async () => {
+    await API.deleteRow({
+      rowId: row._id,
+      revId: row._rev,
+      tableId: row.tableId,
+    })
     notifications.success("Deleted 1 row")
+    await rows.actions.refreshStack(row[$stackColumn])
   }
 
   onMount(() =>
@@ -33,6 +39,6 @@
   <CreateEditRow
     {row}
     on:deleteRows={deleteRow}
-    on:updaterows={e => rows.actions.addRow(e.detail)}
+    on:addrow={e => rows.actions.refreshStack(e.detail[$stackColumn])}
   />
 </Modal>

@@ -25,6 +25,9 @@
       const res = await API.saveRow({ ...row, tableId: table._id })
       notifications.success("Row saved successfully")
       dispatch("updaterows", res._id)
+      if (creating) {
+        dispatch("addrow", res)
+      }
     } catch (error) {
       const response = error.json
       if (error.handled && response?.errors) {

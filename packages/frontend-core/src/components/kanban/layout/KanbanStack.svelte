@@ -55,9 +55,6 @@
     dnd.actions.consider(stack)
   }}
   class:considered={$dropCandidateStack === stack && stack !== $dragSourceStack}
-  on:mouseup={() => {
-    console.log("mouse up")
-  }}
 >
   <div class="title">
     <div class="badge" style="--color:{color};">
