@@ -9,6 +9,10 @@
   let modal
   let row
 
+  const updateRow = e => {
+    rows.actions.refreshStack(e.detail[$stackColumn])
+  }
+
   const deleteRow = async () => {
     await API.deleteRow({
       rowId: row._id,
@@ -36,9 +40,5 @@
 </script>
 
 <Modal bind:this={modal}>
-  <CreateEditRow
-    {row}
-    on:deleteRows={deleteRow}
-    on:addrow={e => rows.actions.refreshStack(e.detail[$stackColumn])}
-  />
+  <CreateEditRow {row} on:deleterow={deleteRow} on:updaterow={updateRow} />
 </Modal>

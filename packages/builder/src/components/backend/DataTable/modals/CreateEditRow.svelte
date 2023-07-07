@@ -24,10 +24,7 @@
     try {
       const res = await API.saveRow({ ...row, tableId: table._id })
       notifications.success("Row saved successfully")
-      dispatch("updaterows", res._id)
-      if (creating) {
-        dispatch("addrow", res)
-      }
+      dispatch("updaterow", res)
     } catch (error) {
       const response = error.json
       if (error.handled && response?.errors) {
@@ -59,7 +56,7 @@
     secondaryButtonWarning={!creating}
     secondaryButtonText="Delete"
     secondaryAction={() => {
-      dispatch("deleteRows", row)
+      dispatch("deleterow", row)
     }}
   >
     {#each tableSchema as [key, meta]}

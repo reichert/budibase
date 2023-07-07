@@ -9,6 +9,10 @@
   let modal
   let row
 
+  const updateRow = e => {
+    rows.actions.refreshRow(e.detail?._id)
+  }
+
   const deleteRow = e => {
     rows.actions.deleteRows([e.detail])
     notifications.success("Deleted 1 row")
@@ -29,9 +33,5 @@
 </script>
 
 <Modal bind:this={modal}>
-  <CreateEditRow
-    {row}
-    on:updaterows={e => rows.actions.refreshRow(e.detail)}
-    on:deleteRows={deleteRow}
-  />
+  <CreateEditRow {row} on:updaterow={updateRow} on:deleterow={deleteRow} />
 </Modal>
