@@ -38,7 +38,6 @@ import * as controllers from "./controllers"
 import { cleanup } from "../../utilities/fileSystem"
 import newid from "../../db/newid"
 import { generateUserMetadataID } from "../../db/utils"
-import { startup } from "../../startup"
 import supertest from "supertest"
 import {
   App,
@@ -79,8 +78,10 @@ class TestConfiguration {
   datasource: any
   tenantId?: string
   defaultUserValues: DefaultUserValues
+  openServer: boolean
 
-  constructor(openServer = true) {
+  constructor(openServer = false) {
+    this.openServer = openServer
     if (openServer) {
       // use a random port because it doesn't matter
       env.PORT = "0"
@@ -160,7 +161,8 @@ class TestConfiguration {
 
   // use a new id as the name to avoid name collisions
   async init(appName = newid()) {
-    if (!this.started) {
+    if (!this.started && this.openServer) {
+      const { startup } = require("../../startup")
       await startup()
     }
     return this.newTenant(appName)
@@ -240,7 +242,7 @@ class TestConfiguration {
     roles,
   }: any = {}) {
     const db = tenancy.getTenantDB(this.getTenantId())
-    let existing
+    let existing: any
     try {
       existing = await db.get(id)
     } catch (err) {
@@ -342,6 +344,7 @@ class TestConfiguration {
   async login({ roleId, userId, builder, prodApp = false }: any = {}) {
     const appId = prodApp ? this.prodAppId : this.appId
     return context.doInAppContext(appId, async () => {
+      userId = !userId ? `us_uuid1` : userId
       userId = !userId ? `us_uuid1` : userId
       if (!this.request) {
         throw "Server has not been opened, cannot login."
@@ -460,7 +463,7 @@ class TestConfiguration {
   async generateApiKey(userId = this.defaultUserValues.globalUserId) {
     const db = tenancy.getTenantDB(this.getTenantId())
     const id = dbCore.generateDevInfoID(userId)
-    let devInfo
+    let devInfo: any
     try {
       devInfo = await db.get(id)
     } catch (err) {

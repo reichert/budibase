@@ -49,7 +49,7 @@ let request: supertest.SuperTest<supertest.Test> | undefined | null,
   config: TestConfig | null
 
 export function beforeAll() {
-  config = new TestConfig()
+  config = new TestConfig(true)
   request = config.getRequest()
 }
 
