@@ -29,17 +29,15 @@ export default class AuthAPI extends BaseAPI {
     }, opts)
   }
 
-  async logout(
-      opts: APIRequestOpts = { status: 200 }
-  ) {
+  async logout(opts: APIRequestOpts = { status: 200 }) {
     return this.doRequest(() => {
       return this.client.post(`/api/auth/logout`)
     }, opts)
   }
 
   async resetPassword(
-      email: string,
-      opts: APIRequestOpts = { status: 200 }
+    email: string,
+    opts: APIRequestOpts = { status: 200 }
   ): Promise<[Response, string]> {
     return this.doRequest(async () => {
       const [response] = await this.client.post(`/api/auth/reset`, {
@@ -54,9 +52,9 @@ export default class AuthAPI extends BaseAPI {
   }
 
   async resetPasswordUpdate(
-      resetCode: string,
-      password: string,
-      opts: APIRequestOpts = { status: 200 }
+    resetCode: string,
+    password: string,
+    opts: APIRequestOpts = { status: 200 }
   ) {
     return this.doRequest(() => {
       return this.client.post(`/api/auth/reset/update`, {
@@ -68,9 +66,7 @@ export default class AuthAPI extends BaseAPI {
     }, opts)
   }
 
-  async self(
-      opts: APIRequestOpts = { status: 200 }
-  ) {
+  async self(opts: APIRequestOpts = { status: 200 }) {
     return this.doRequest(() => {
       return this.client.get(`/api/auth/self`)
     }, opts)
