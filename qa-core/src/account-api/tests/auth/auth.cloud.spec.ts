@@ -1,6 +1,7 @@
 import TestConfiguration from "../../config/TestConfiguration"
 import * as fixtures from "../../fixtures"
 import { generator } from "../../../shared"
+import {Hosting} from "@budibase/types";
 
 describe("Accounts", () => {
   const config = new TestConfiguration()
@@ -15,7 +16,9 @@ describe("Accounts", () => {
 
   it("performs password reset flow", async () => {
     // Create account
-    const createAccountRequest = fixtures.accounts.generateAccount()
+    const createAccountRequest = fixtures.accounts.generateAccount({
+      hosting: Hosting.CLOUD,
+    })
     await config.api.accounts.create(createAccountRequest, { autoVerify: true })
 
     // Request password reset to get code
