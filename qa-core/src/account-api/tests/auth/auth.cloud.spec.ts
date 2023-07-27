@@ -1,7 +1,7 @@
 import TestConfiguration from "../../config/TestConfiguration"
 import * as fixtures from "../../fixtures"
 import { generator } from "../../../shared"
-import {Hosting} from "@budibase/types";
+import { Hosting } from "@budibase/types"
 
 describe("Accounts", () => {
   const config = new TestConfiguration()
