@@ -77,7 +77,7 @@
         anchor,
       }}
       on:keydown={handleEscape}
-      class="spectrum-Popover is-open"
+      class="spectrum-Popover glass is-open"
       class:customZindex
       role="presentation"
       style="height: {customHeight}; --customZindex: {customZindex};"

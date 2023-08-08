@@ -108,7 +108,7 @@
             <div
               use:focusModal
               bind:this={modal}
-              class="spectrum-Modal is-open"
+              class="spectrum-Modal is-open glass"
               in:fly={{ y: 30, duration: 200 }}
               out:fly|local={{ y: 30, duration: 200 }}
             >
@@ -133,7 +133,7 @@
     background: transparent;
   }
   .background {
-    background: var(--modal-background, rgba(0, 0, 0, 0.75));
+    background: var(--modal-background, rgba(0, 0, 0, 0.5));
     position: fixed;
     top: 0;
     left: 0;

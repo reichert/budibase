@@ -421,6 +421,7 @@
       return state
     })
   }}
+  class="glass"
 >
   <div class="builder-side-panel-header">
     <Heading size="S">Users</Heading>
@@ -724,7 +725,6 @@
     box-sizing: border-box;
     max-width: calc(100vw - 40px);
     background: var(--background);
-    border-left: var(--border-light);
     z-index: 999;
     display: flex;
     flex-direction: column;
@@ -733,8 +733,9 @@
     position: absolute;
     width: 400px;
     right: 0;
-    height: 100%;
+    height: calc(100% - 20px);
     box-shadow: 0 0 40px 10px rgba(0, 0, 0, 0.1);
+    margin: 10px;
   }
 
   .builder-side-panel-header,
