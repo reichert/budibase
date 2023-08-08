@@ -189,6 +189,8 @@
   }
 
   .input-field {
+    font-size: var(--cell-font-size);
+    font-family: var(--font-sans);
     border: none;
     outline: none;
     background-color: transparent;
