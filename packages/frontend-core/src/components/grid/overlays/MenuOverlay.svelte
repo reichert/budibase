@@ -49,7 +49,7 @@
 </script>
 
 {#if $menu.visible}
-  <div class="menu" {style} use:clickOutside={() => menu.actions.close()}>
+  <div class="menu glass" {style} use:clickOutside={() => menu.actions.close()}>
     <Menu>
       <MenuItem
         icon="Copy"
@@ -113,12 +113,8 @@
 <style>
   .menu {
     position: absolute;
-    background: var(--cell-background);
-    border: 1px solid var(--spectrum-global-color-gray-300);
     width: 180px;
-    border-radius: 4px;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 0 20px -4px rgba(0, 0, 0, 0.15);
   }
 </style>
