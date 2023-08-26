@@ -54,10 +54,6 @@ export const selectedScreen = derived(store, $store => {
   return $store.screens.find(screen => screen._id === $store.selectedScreenId)
 })
 
-export const selectedLayout = derived(store, $store => {
-  return $store.layouts?.find(layout => layout._id === $store.selectedLayoutId)
-})
-
 export const selectedComponent = derived(
   [store, selectedScreen],
   ([$store, $selectedScreen]) => {

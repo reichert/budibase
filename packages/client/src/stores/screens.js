@@ -2,7 +2,6 @@ import { derived } from "svelte/store"
 import { routeStore } from "./routes"
 import { builderStore } from "./builder"
 import { appStore } from "./app"
-import { orgStore } from "./org"
 import { dndIndex, dndParent, dndIsNewComponent, dndBounds } from "./dnd.js"
 import { RoleUtils } from "@budibase/frontend-core"
 import { findComponentById, findComponentParent } from "../utils/components.js"
@@ -15,7 +14,6 @@ const createScreenStore = () => {
       appStore,
       routeStore,
       builderStore,
-      orgStore,
       dndParent,
       dndIndex,
       dndIsNewComponent,
@@ -25,23 +23,17 @@ const createScreenStore = () => {
       $appStore,
       $routeStore,
       $builderStore,
-      $orgStore,
       $dndParent,
       $dndIndex,
       $dndIsNewComponent,
       $dndBounds,
     ]) => {
-      let activeLayout, activeScreen
+      let activeScreen
       let screens
       if ($builderStore.inBuilder) {
         // Use builder defined definitions if inside the builder preview
         activeScreen = Helpers.cloneDeep($builderStore.screen)
         screens = [activeScreen]
-
-        // Legacy - allow the builder to specify a layout
-        if ($builderStore.layout) {
-          activeLayout = $builderStore.layout
-        }
       } else {
         // Find the correct screen by matching the current route
         screens = $appStore.screens || []
@@ -51,16 +43,6 @@ const createScreenStore = () => {
               screen => screen._id === $routeStore.activeRoute.screenId
             )
           )
-        }
-
-        // Legacy - find the custom layout for the selected screen
-        if (activeScreen) {
-          const screenLayout = $appStore.layouts?.find(
-            layout => layout._id === activeScreen.layoutId
-          )
-          if (screenLayout) {
-            activeLayout = screenLayout
-          }
         }
       }
 
@@ -125,60 +107,7 @@ const createScreenStore = () => {
         // Then sort alphabetically
         return a.routing.route < b.routing.route ? -1 : 1
       })
-
-      // If we don't have a legacy custom layout, build a layout structure
-      // from the screen navigation settings
-      if (!activeLayout) {
-        let navigationSettings = {
-          navigation: "None",
-          pageWidth: activeScreen?.width || "Large",
-        }
-        if (activeScreen?.showNavigation) {
-          navigationSettings = {
-            ...navigationSettings,
-            ...($builderStore.navigation || $appStore.application?.navigation),
-          }
-
-          // Default navigation to top
-          if (!navigationSettings.navigation) {
-            navigationSettings.navigation = "Top"
-          }
-
-          // Default title to app name
-          if (!navigationSettings.title && !navigationSettings.hideTitle) {
-            navigationSettings.title = $appStore.application?.name
-          }
-
-          // Default to the org logo
-          if (!navigationSettings.logoUrl) {
-            navigationSettings.logoUrl = $orgStore?.logoUrl
-          }
-        }
-        activeLayout = {
-          _id: "layout",
-          props: {
-            _component: "@budibase/standard-components/layout",
-            _children: [
-              {
-                _component: "screenslot",
-                _id: "screenslot",
-                _styles: {
-                  normal: {
-                    flex: "1 1 auto",
-                    display: "flex",
-                    "flex-direction": "column",
-                    "justify-content": "flex-start",
-                    "align-items": "stretch",
-                  },
-                },
-              },
-            ],
-            ...navigationSettings,
-            embedded: $appStore.embedded,
-          },
-        }
-      }
-      return { screens, activeLayout, activeScreen }
+      return { screens, activeScreen }
     }
   )
 

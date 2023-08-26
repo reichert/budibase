@@ -1,12 +1,10 @@
 <script>
-  import { setContext, getContext, onMount } from "svelte"
+  import { setContext, onMount } from "svelte"
   import Router, { querystring } from "svelte-spa-router"
   import { routeStore, stateStore } from "stores"
   import Screen from "./Screen.svelte"
   import { get } from "svelte/store"
 
-  const { styleable } = getContext("sdk")
-  const component = getContext("component")
   setContext("screenslot", true)
 
   // Only wrap this as an array to take advantage of svelte keying,
@@ -62,7 +60,7 @@
 </script>
 
 {#key config.id}
-  <div use:styleable={$component.styles}>
+  <div>
     <Router on:routeLoading={onRouteLoading} routes={config.routes} />
   </div>
 {/key}

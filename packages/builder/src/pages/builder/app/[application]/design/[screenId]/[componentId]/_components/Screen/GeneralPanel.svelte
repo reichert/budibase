@@ -121,26 +121,11 @@
       props: {
         options: ["Extra small", "Small", "Medium", "Large", "Max"],
         placeholder: "Default",
-        disabled: !!$selectedScreen.layoutId,
       },
     },
   ]
-
-  const removeCustomLayout = async () => {
-    return store.actions.screens.removeCustomLayout(get(selectedScreen))
-  }
 </script>
 
-{#if $selectedScreen.layoutId}
-  <Banner
-    type="warning"
-    extraButtonText="Detach custom layout"
-    extraButtonAction={removeCustomLayout}
-    showCloseButton={false}
-  >
-    This screen uses a custom layout, which is deprecated
-  </Banner>
-{/if}
 {#each screenSettings as setting (setting.key)}
   <PropertyControl
     control={setting.control}

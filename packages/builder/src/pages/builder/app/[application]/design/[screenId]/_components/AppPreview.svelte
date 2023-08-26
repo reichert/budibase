@@ -16,7 +16,6 @@
   import { isActive, goto } from "@roxi/routify"
 
   let iframe
-  let layout
   let screen
   let confirmDeleteDialog
   let idToDelete
@@ -39,7 +38,6 @@
 
   $: previewData = {
     appId: $store.appId,
-    layout,
     screen,
     selectedComponentId,
     theme: $store.theme,

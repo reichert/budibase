@@ -58,7 +58,7 @@
         const response = await store.actions.screens.save(screen)
         screenId = response._id
 
-        // Add link in layout. We only ever actually create 1 screen now, even
+        // Add navigation link. We only ever actually create 1 screen now, even
         // for autoscreens, so it's always safe to do this.
         await store.actions.links.save(
           screen.routing.route,

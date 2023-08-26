@@ -666,7 +666,7 @@ export const getSchemaForTable = (tableId, options) => {
  *   formSchema: whether the schema is for a form
  *   searchableSchema: whether to generate a searchable schema, which may have
  *     fewer fields than a readable schema
- * @param asset the current root client app asset (layout or screen). This is
+ * @param asset the current client app screen. This is
  *   optional and only needed for "provider" datasource types.
  * @param datasource the datasource definition
  * @param options options for generating the schema
@@ -916,7 +916,6 @@ export const getAllStateVariables = () => {
 export const getAllAssets = () => {
   // Get all component containing assets
   let allAssets = []
-  allAssets = allAssets.concat(get(store).layouts || [])
   allAssets = allAssets.concat(get(store).screens || [])
 
   return allAssets

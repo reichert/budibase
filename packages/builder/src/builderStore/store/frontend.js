@@ -46,7 +46,6 @@ const INITIAL_FRONTEND_STATE = {
   name: "",
   url: "",
   description: "",
-  layouts: [],
   screens: [],
   components: [],
   clientFeatures: {
@@ -83,7 +82,6 @@ const INITIAL_FRONTEND_STATE = {
   // URL params
   selectedScreenId: null,
   selectedComponentId: null,
-  selectedLayoutId: null,
 
   // Client state
   selectedComponentInstance: null,
@@ -124,7 +122,7 @@ export const getFrontendStore = () => {
       websocket = null
     },
     initialise: async pkg => {
-      const { layouts, screens, application, clientLibPath, hasLock } = pkg
+      const { screens, application, clientLibPath, hasLock } = pkg
       if (!websocket) {
         websocket = createBuilderWebsocket(application.appId)
       }
@@ -138,7 +136,6 @@ export const getFrontendStore = () => {
         description: application.description,
         appId: application.appId,
         url: application.url,
-        layouts: layouts || [],
         screens: screens || [],
         theme: application.theme || "spectrum--light",
         customTheme: application.customTheme,
@@ -462,16 +459,6 @@ export const getFrontendStore = () => {
           }
         }
       },
-      removeCustomLayout: async screen => {
-        // Pull relevant settings from old layout, if required
-        const layout = get(store).layouts.find(x => x._id === screen.layoutId)
-        const patch = screen => {
-          screen.layoutId = null
-          screen.showNavigation = layout?.props.navigation !== "None"
-          screen.width = layout?.props.width || "Large"
-        }
-        await store.actions.screens.patch(patch, screen._id)
-      },
       enrichEmptySettings: screen => {
         // Flatten the recursive component tree
         const components = findAllMatchingComponents(screen.props, x => x)
@@ -498,44 +485,6 @@ export const getFrontendStore = () => {
       registerEventHandler: handler => {
         store.update(state => {
           state.previewEventHandler = handler
-          return state
-        })
-      },
-    },
-    layouts: {
-      select: layoutId => {
-        // Check this layout exists
-        const state = get(store)
-        const layout = state.layouts.find(layout => layout._id === layoutId)
-        if (!layout) {
-          return
-        }
-
-        // Check layout isn't already selected
-        if (
-          state.selectedLayoutId === layout._id &&
-          state.selectedComponentId === layout.props?._id
-        ) {
-          return
-        }
-
-        // Select new layout
-        store.update(state => {
-          state.selectedLayoutId = layout._id
-          state.selectedComponentId = layout.props?._id
-          return state
-        })
-      },
-      delete: async layout => {
-        if (!layout?._id) {
-          return
-        }
-        await API.deleteLayout({
-          layoutId: layout._id,
-          layoutRev: layout._rev,
-        })
-        store.update(state => {
-          state.layouts = state.layouts.filter(x => x._id !== layout._id)
           return state
         })
       },
@@ -798,7 +747,7 @@ export const getFrontendStore = () => {
                 )
               }
             } else {
-              // Use screen or layout if no component is selected
+              // Use screen if no component is selected
               parentComponent = screen.props
             }
 

@@ -118,7 +118,7 @@
   {#if section.visible}
     <DetailSummary name={section.name} collapsible={false}>
       <div class="settings">
-        {#if idx === 0 && !componentInstance._component.endsWith("/layout") && !isScreen}
+        {#if idx === 0 && !isScreen}
           <PropertyControl
             control={Input}
             label="Name"

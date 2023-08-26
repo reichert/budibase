@@ -5,36 +5,16 @@
   import { FieldTypes } from "constants"
   import active from "svelte-spa-router/active"
   import { RoleUtils } from "@budibase/frontend-core"
-
-  const sdk = getContext("sdk")
-  const {
+  import {
+    appStore,
     routeStore,
-    styleable,
-    linkable,
     builderStore,
     currentRole,
     sidePanelStore,
-  } = sdk
-  const component = getContext("component")
-  const context = getContext("context")
-
-  // Legacy props which must remain unchanged for backwards compatibility
-  export let title
-  export let hideTitle = false
-  export let logoUrl
-  export let hideLogo = false
-  export let navigation = "Top"
-  export let sticky = false
-  export let links
-  export let width = "Large"
-
-  // New props from new design UI
-  export let navBackground
-  export let navTextColor
-  export let navWidth
-  export let pageWidth
-
-  export let embedded = false
+    orgStore,
+    screenStore,
+  } from "../stores"
+  import { linkable } from "../utils/linkable.js"
 
   const NavigationClasses = {
     Top: "top",
@@ -49,25 +29,35 @@
     "Extra small": "xs",
   }
 
+  const context = getContext("context")
+  const layoutStore = writable({ headerHeight: 0 })
+  setContext("layout", layoutStore)
+
   let mobileOpen = false
 
-  // Set some layout context. This isn't used in bindings but can be used
-  // determine things about the current app layout.
+  $: navSettings = getNavigationSettings(
+    $screenStore.activeScreen,
+    $builderStore.navigation,
+    $appStore.application,
+    $orgStore?.logoUrl
+  )
   $: mobile = $context.device.mobile
-  const store = writable({ headerHeight: 0 })
-  $: store.set({
-    screenXOffset: getScreenXOffset(navigation, mobile),
-    screenYOffset: getScreenYOffset(navigation, mobile),
+  $: layoutStore.set({
+    screenXOffset: getScreenXOffset(navSettings.navigation, mobile),
+    screenYOffset: getScreenYOffset(navSettings.navigation, mobile),
   })
-  setContext("layout", store)
-
-  $: validLinks = getValidLinks(links, $currentRole)
-  $: typeClass = NavigationClasses[navigation] || NavigationClasses.None
-  $: navWidthClass = WidthClasses[navWidth || width] || WidthClasses.Large
-  $: pageWidthClass = WidthClasses[pageWidth || width] || WidthClasses.Large
+  $: pageWidth = $screenStore.activeScreen?.width || "Large"
+  $: embedded = $appStore.embedded
+  $: validLinks = getValidLinks(navSettings.links, $currentRole)
+  $: typeClass =
+    NavigationClasses[navSettings.navigation] || NavigationClasses.None
+  $: navWidthClass =
+    WidthClasses[navSettings.navWidth || navSettings.width] ||
+    WidthClasses.Large
+  $: pageWidthClass =
+    WidthClasses[pageWidth || navSettings.width] || WidthClasses.Large
   $: navStyle = getNavStyle(
-    navBackground,
-    navTextColor,
+    navSettings,
     $context.device.width,
     $context.device.height
   )
@@ -97,6 +87,40 @@
         })
       }
     }
+  }
+
+  const getNavigationSettings = (
+    screen,
+    builderNav,
+    appDefinition,
+    logoUrl
+  ) => {
+    // Build the root navigation component
+    let navigationSettings = {
+      navigation: "None",
+    }
+    if (screen?.showNavigation) {
+      navigationSettings = {
+        ...navigationSettings,
+        ...(builderNav || appDefinition?.navigation),
+      }
+
+      // Default navigation to top
+      if (!navigationSettings.navigation) {
+        navigationSettings.navigation = "Top"
+      }
+
+      // Default title to app name
+      if (!navigationSettings.title && !navigationSettings.hideTitle) {
+        navigationSettings.title = appDefinition?.name
+      }
+
+      // Default to the org logo
+      if (!navigationSettings.logoUrl) {
+        navigationSettings.logoUrl = logoUrl
+      }
+    }
+    return navigationSettings
   }
 
   const getValidLinks = (allLinks, role) => {
@@ -133,6 +157,7 @@
     }
     return mobile ? "0px" : "250px"
   }
+
   const getScreenYOffset = (navigation, mobile) => {
     if (mobile) {
       return !navigation || navigation === "None" ? 0 : "61px"
@@ -141,13 +166,14 @@
     }
   }
 
-  const getNavStyle = (backgroundColor, textColor, width, height) => {
+  const getNavStyle = (navSettings, width, height) => {
+    const { navBackground, navTextColor } = navSettings
     let style = `--width:${width}px; --height:${height}px;`
-    if (backgroundColor) {
-      style += `--navBackground:${backgroundColor};`
+    if (navBackground) {
+      style += `--navBackground:${navBackground};`
     }
-    if (textColor) {
-      style += `--navTextColor:${textColor};`
+    if (navTextColor) {
+      style += `--navTextColor:${navTextColor};`
     }
     return style
   }
@@ -155,7 +181,6 @@
 
 <div
   class="component {screenId} layout layout--{typeClass}"
-  use:styleable={$component.styles}
   class:desktop={!mobile}
   class:mobile={!!mobile}
   data-id={screenId}
@@ -172,7 +197,7 @@
       >
         <div
           class="nav-wrapper {navigationId}-dom"
-          class:sticky
+          class:sticky={navSettings.sticky}
           class:hidden={$routeStore.queryParams?.peek}
           class:clickable={$builderStore.inBuilder}
           on:click={$builderStore.inBuilder
@@ -192,11 +217,14 @@
                 </div>
               {/if}
               <div class="logo">
-                {#if !hideLogo}
-                  <img src={logoUrl || "/builder/bblogo.png"} alt={title} />
+                {#if !navSettings.hideLogo}
+                  <img
+                    src={navSettings.logoUrl || "/builder/bblogo.png"}
+                    alt={navSettings.title}
+                  />
                 {/if}
-                {#if !hideTitle && title}
-                  <Heading size="S">{title}</Heading>
+                {#if !navSettings.hideTitle && navSettings.title}
+                  <Heading size="S">{navSettings.title}</Heading>
                 {/if}
               </div>
               {#if !embedded}

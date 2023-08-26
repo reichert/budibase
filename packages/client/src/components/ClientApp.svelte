@@ -4,7 +4,6 @@
   import { Layout, Heading, Body } from "@budibase/bbui"
   import ErrorSVG from "@budibase/frontend-core/assets/error.svg"
   import { Constants, CookieUtils } from "@budibase/frontend-core"
-  import Component from "./Component.svelte"
   import SDK from "sdk"
   import {
     createContextStore,
@@ -38,6 +37,8 @@
   import DevTools from "components/devtools/DevTools.svelte"
   import FreeFooter from "components/FreeFooter.svelte"
   import licensing from "../licensing"
+  import AppLayout from "components/AppLayout.svelte"
+  import Router from "components/Router.svelte"
 
   // Provide contexts
   setContext("sdk", SDK)
@@ -152,19 +153,6 @@
                           </Body>
                         </Layout>
                       </div>
-                    {:else if !$screenStore.activeLayout}
-                      <div class="error">
-                        <Layout justifyItems="center" gap="S">
-                          <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-                          {@html ErrorSVG}
-                          <Heading size="L">
-                            Something went wrong rendering your app
-                          </Heading>
-                          <Body size="S">
-                            Get in touch with support if this issue persists
-                          </Body>
-                        </Layout>
-                      </div>
                     {:else if embedNoScreens}
                       <div class="error">
                         <Layout justifyItems="center" gap="S">
@@ -177,12 +165,9 @@
                       </div>
                     {:else}
                       <CustomThemeWrapper>
-                        {#key $screenStore.activeLayout._id}
-                          <Component
-                            isLayout
-                            instance={$screenStore.activeLayout.props}
-                          />
-                        {/key}
+                        <AppLayout>
+                          <Router />
+                        </AppLayout>
 
                         <!--
                           Flatpickr needs to be inside the theme wrapper.

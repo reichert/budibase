@@ -17,9 +17,6 @@ const createBuilderStore = () => {
     hiddenComponentIds: [],
     usedPlugins: null,
     eventResolvers: {},
-
-    // Legacy - allow the builder to specify a layout
-    layout: null,
   }
   const store = writable(initialState)
   const actions = {
