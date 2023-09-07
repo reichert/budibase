@@ -254,6 +254,7 @@
   </div>
   <div
     id="side-panel-container"
+    class="glass"
     class:open={$sidePanelStore.open}
     use:clickOutside={autoCloseSidePanel ? sidePanelStore.actions.close : null}
     class:builder={$builderStore.inBuilder}
@@ -358,7 +359,6 @@
 
   #side-panel-container {
     max-width: calc(100vw - 40px);
-    background: var(--spectrum-global-color-gray-50);
     z-index: 3;
     padding: var(--spacing-xl);
     display: flex;
@@ -370,8 +370,9 @@
     position: absolute;
     width: 400px;
     right: 0;
+    top: 16px;
     transform: translateX(100%);
-    height: 100%;
+    height: calc(100% - 32px);
   }
   #side-panel-container.builder {
     transform: translateX(0);
@@ -379,7 +380,7 @@
     pointer-events: none;
   }
   #side-panel-container.open {
-    transform: translateX(0);
+    transform: translateX(-16px);
     box-shadow: 0 0 40px 10px rgba(0, 0, 0, 0.1);
   }
   #side-panel-container.builder.open {

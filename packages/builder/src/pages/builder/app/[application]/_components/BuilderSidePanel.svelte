@@ -943,9 +943,9 @@
     position: absolute;
     width: 400px;
     right: 0;
-    height: calc(100% - 20px);
+    height: calc(100% - 32px);
     box-shadow: 0 0 40px 10px rgba(0, 0, 0, 0.1);
-    margin: 10px;
+    margin: 16px;
   }
 
   .builder-side-panel-header,
