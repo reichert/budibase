@@ -100,7 +100,7 @@
   </Popover>
 </span>
 
-<Layout noPadding gap="S">
+<div class="main">
   {#if selectedCategory}
     <div class="sub-section-back">
       <ActionButton
@@ -253,9 +253,16 @@
       {/if}
     {/if}
   {/if}
-</Layout>
+</div>
 
 <style>
+  .main {
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
   .search :global(input) {
     border: none;
     border-radius: 0px;
@@ -272,9 +279,6 @@
     border-left: 2px solid transparent;
     border-right: 2px solid transparent;
     margin-right: 1px;
-    position: sticky;
-    top: 0;
-    background-color: var(--background);
     z-index: 2;
   }
 
@@ -289,15 +293,18 @@
   ul.category-list {
     padding: 0px var(--spacing-l);
     padding-bottom: var(--spacing-l);
+    flex: 1 1 auto;
+    overflow: auto;
+    padding-top: var(--spacing-l);
   }
   .sub-section {
     padding: var(--spacing-l);
     padding-top: 0px;
+    overflow: auto;
+    flex: 1 1 auto;
   }
   .sub-section-back {
-    padding: var(--spacing-l);
-    padding-top: var(--spacing-xl);
-    padding-bottom: 0px;
+    padding: var(--spacing-xl) var(--spacing-l);
   }
   .cat-heading {
     margin-bottom: var(--spacing-l);

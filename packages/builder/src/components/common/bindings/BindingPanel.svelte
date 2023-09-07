@@ -462,8 +462,8 @@
   .binding-picker {
     border-left: 2px solid var(--border-light);
     border-left: var(--border-light);
-    overflow: scroll;
     height: 100%;
+    overflow: hidden;
   }
   .editor {
     padding: var(--spacing-xl);

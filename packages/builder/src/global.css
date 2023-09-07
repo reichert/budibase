@@ -60,7 +60,7 @@ a {
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--spectrum-alias-background-color-default);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
   background-color: var(--spectrum-global-color-gray-400);

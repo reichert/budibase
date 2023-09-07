@@ -9,8 +9,8 @@
 
   export let title
   export let fillWidth
-  export let left = "314px"
-  export let width = "calc(100% - 626px)"
+  export let left = "324px"
+  export let width = "calc(100% - 650px)"
   export let headless = false
 
   const dispatch = createEventDispatcher()
@@ -48,7 +48,7 @@
   // transition has a horrible overshoot
   const slide = () => {
     return {
-      duration: 360,
+      duration: 300,
       css: t => {
         const translation = 100 - Math.round(easeInOutQuad(t) * 100)
         return `transform: translateY(${translation}%);`
@@ -61,7 +61,7 @@
   <Portal>
     <section
       class:fillWidth
-      class="drawer"
+      class="drawer glass"
       class:headless
       transition:slide|local
       style={`width: ${width}; left: ${left};`}
@@ -97,7 +97,7 @@
 
   .drawer {
     position: absolute;
-    bottom: 0;
+    bottom: 10px;
     background: var(--background);
     border-top: var(--border-light);
     z-index: 3;
