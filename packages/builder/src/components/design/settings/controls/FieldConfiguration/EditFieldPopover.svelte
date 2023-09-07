@@ -111,36 +111,31 @@
     return { ...cfg, left, top }
   }}
 >
-  <span class="popover-wrap">
-    <Layout noPadding noGap>
-      <div class="type-icon">
-        <Icon name={parsedComponentDef.icon} />
-        <span>{field.field}</span>
-      </div>
-      <ComponentSettingsSection
-        componentInstance={pseudoComponentInstance}
-        componentDefinition={parsedComponentDef}
-        isScreen={false}
-        onUpdateSetting={updateSetting}
-        showSectionTitle={false}
-        showInstanceName={false}
-        {bindings}
-        {componentBindings}
-        on:drawerShow={e => {
-          drawers = [...drawers, e.detail]
-        }}
-        on:drawerHide={() => {
-          drawers = drawers.slice(0, -1)
-        }}
-      />
-    </Layout>
-  </span>
+  <Layout noPadding noGap>
+    <div class="type-icon">
+      <Icon name={parsedComponentDef.icon} />
+      <span>{field.field}</span>
+    </div>
+    <ComponentSettingsSection
+      componentInstance={pseudoComponentInstance}
+      componentDefinition={parsedComponentDef}
+      isScreen={false}
+      onUpdateSetting={updateSetting}
+      showSectionTitle={false}
+      showInstanceName={false}
+      {bindings}
+      {componentBindings}
+      on:drawerShow={e => {
+        drawers = [...drawers, e.detail]
+      }}
+      on:drawerHide={() => {
+        drawers = drawers.slice(0, -1)
+      }}
+    />
+  </Layout>
 </Popover>
 
 <style>
-  .popover-wrap {
-    background-color: var(--spectrum-alias-background-color-primary);
-  }
   .type-icon {
     display: flex;
     gap: var(--spacing-m);
