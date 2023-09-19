@@ -42,24 +42,24 @@ const DependencyOrderedStores = [
   Notifications,
 ]
 
-export const attachStores = context => {
+export const attachStores = (context, stores = DependencyOrderedStores) => {
   // Atomic store creation
-  for (let store of DependencyOrderedStores) {
+  for (let store of stores) {
     context = { ...context, ...store.createStores?.(context) }
   }
 
   // Derived store creation
-  for (let store of DependencyOrderedStores) {
+  for (let store of stores) {
     context = { ...context, ...store.deriveStores?.(context) }
   }
 
   // Action creation
-  for (let store of DependencyOrderedStores) {
+  for (let store of stores) {
     context = { ...context, ...store.createActions?.(context) }
   }
 
   // Initialise any store logic
-  for (let store of DependencyOrderedStores) {
+  for (let store of stores) {
     store.initialise?.(context)
   }
 

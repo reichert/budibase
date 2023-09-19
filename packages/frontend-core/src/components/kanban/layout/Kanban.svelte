@@ -3,47 +3,52 @@
   import { fade } from "svelte/transition"
   import { ProgressCircle } from "@budibase/bbui"
   import { createAPIClient } from "../../../api"
-  import { attachStores } from "../stores"
+  import { attachStores } from "../../grid/stores"
   import KanbanBody from "./KanbanBody.svelte"
   import StackedByButton from "../controls/StackedByButton.svelte"
   import CustomiseCardsButton from "../controls/CustomiseCardsButton.svelte"
-  import { createEventManagers } from "../lib/events"
+  import { createEventManagers } from "../../grid/lib/events"
+  import { writable } from "svelte/store"
+  import { DependencyOrderedStores } from "../stores"
 
   export let API = null
-  export let tableId = null
+  export let datasource = null
   export let schemaOverrides = null
-  export let allowAddRows = true
-  export let allowExpandRows = true
-  export let allowEditRows = true
-  export let allowDeleteRows = true
-  export let allowSchemaChanges = true
+  export let canAddRows = true
+  export let canExpandRows = true
+  export let canEditRows = true
+  export let canDeleteRows = true
+  export let canSaveSchema = true
   export let notifySuccess = null
   export let notifyError = null
 
   // Unique identifier for DOM nodes inside this instance
   const rand = Math.random()
 
+  // Store props in a store for reference in other stores
+  const props = writable($$props)
+
   // Build up context
   let context = {
     API: API || createAPIClient(),
     rand,
-    props: $$props,
+    props,
   }
   context = { ...context, ...createEventManagers() }
-  context = attachStores(context)
+  context = attachStores(context, DependencyOrderedStores)
 
   // Reference some stores for local use
-  const { config, loaded, loading, error, stackColumn } = context
+  const { loading, loaded, error, stackColumn } = context
 
   // Keep config store up to date with props
-  $: config.set({
-    tableId,
+  $: props.set({
+    datasource,
     schemaOverrides,
-    allowAddRows,
-    allowExpandRows,
-    allowEditRows,
-    allowDeleteRows,
-    allowSchemaChanges,
+    canAddRows,
+    canExpandRows,
+    canEditRows,
+    canDeleteRows,
+    canSaveSchema,
     notifySuccess,
     notifyError,
   })
@@ -61,7 +66,16 @@
     </div>
     <div class="controls-right" />
   </div>
-  {#if $loaded}
+  {#if $error}
+    <div class="kanban-error">
+      <div class="kanban-error-title">
+        There was a problem loading your kanban board
+      </div>
+      <div class="kanban-error-subtitle">
+        {$error}
+      </div>
+    </div>
+  {:else if $loaded}
     {#if $stackColumn}
       <div class="kanban-data">
         <KanbanBody />
@@ -74,17 +88,8 @@
         </div>
       </div>
     {/if}
-  {:else if $error}
-    <div class="kanban-error">
-      <div class="kanban-error-title">
-        There was a problem loading your kanban board
-      </div>
-      <div class="kanban-error-subtitle">
-        {$error}
-      </div>
-    </div>
   {/if}
-  {#if $loading && !$error}
+  {#if $loading}
     <div in:fade|local={{ duration: 130 }} class="kanban-loading">
       <ProgressCircle />
     </div>

@@ -1,5 +1,5 @@
 <script>
-  import { getColor } from "../lib/utils"
+  import { getColor } from "../../grid/lib/utils"
 
   export let value
   export let schema

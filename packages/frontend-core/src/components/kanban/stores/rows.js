@@ -1,6 +1,6 @@
 import { writable, derived, get } from "svelte/store"
 import { fetchData } from "../../../fetch/fetchData"
-import { StackCardLimit } from "../lib/constants"
+import { StackCardLimit } from "../../grid/lib/constants"
 
 export const createStores = () => {
   const stackRowStores = writable([])
@@ -60,33 +60,30 @@ export const deriveStores = context => {
 export const initialise = context => {
   const {
     API,
-    tableId,
+    definition,
     stackRowStores,
     stackRowStoreMap,
-    table,
     stackColumn,
     stackValues,
+    datasource,
   } = context
 
   // Ensure we have fetches for every stack
   stackValues.subscribe($stackValues => {
     const $stackRowStoreMap = get(stackRowStoreMap)
-    const $table = get(table)
-    const $tableId = get(tableId)
+    const $definition = get(definition)
+    const $datasource = get(datasource)
     const $stackColumn = get(stackColumn)
-    if (!$table || !$stackColumn) {
+    if (!$definition || !$stackColumn) {
       return
     }
 
-    const stackColumnInfo = $table.schema[$stackColumn]
+    const stackColumnInfo = $definition.schema[$stackColumn]
     $stackValues.forEach(value => {
       if (!$stackRowStoreMap[value]) {
         const fetch = fetchData({
           API,
-          datasource: {
-            type: "table",
-            tableId: $tableId,
-          },
+          datasource: $datasource,
           options: {
             query: {
               equal: {

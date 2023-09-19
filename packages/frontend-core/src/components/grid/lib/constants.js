@@ -1,3 +1,4 @@
+// Grid
 export const Padding = 246
 export const MaxCellRenderHeight = 222
 export const ScrollBarSize = 8
@@ -13,3 +14,6 @@ export const BlankRowID = "blank"
 export const RowPageSize = 100
 export const FocusedCellMinOffset = 48
 export const MaxCellRenderWidthOverflow = Padding - 3 * ScrollBarSize
+
+// Kanban
+export const StackCardLimit = 100

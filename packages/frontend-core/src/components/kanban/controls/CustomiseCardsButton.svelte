@@ -1,7 +1,7 @@
 <script>
   import { getContext } from "svelte"
   import { ActionButton, Popover, Toggle, Icon } from "@budibase/bbui"
-  import { getColumnIcon } from "../lib/utils"
+  import { getColumnIcon } from "../../grid/lib/utils"
 
   const { columns, stackColumn } = getContext("kanban")
 

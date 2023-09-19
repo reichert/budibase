@@ -15,7 +15,7 @@
 </script>
 
 <script>
-  import { getColumnIcon } from "../lib/utils"
+  import { getColumnIcon } from "../../grid/lib/utils"
   import { Icon } from "@budibase/bbui"
 
   export let column

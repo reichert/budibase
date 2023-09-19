@@ -1,6 +1,6 @@
 <script>
   import { getContext } from "svelte"
-  import { getColor } from "../lib/utils"
+  import { getColor } from "../../grid/lib/utils"
   import { ProgressCircle, Icon } from "@budibase/bbui"
   import { fade } from "svelte/transition"
   import KanbanCard from "./KanbanCard.svelte"
@@ -11,7 +11,7 @@
   export let idx
 
   const {
-    table,
+    definition,
     visibleColumns,
     dispatch,
     draggedRow,
@@ -22,7 +22,7 @@
     dragSourceStack,
   } = getContext("kanban")
 
-  $: primaryDisplay = $table.primaryDisplay
+  $: primaryDisplay = $definition.primaryDisplay
   $: color = getColor(idx)
   $: exlusions = derived(
     tempExclusions,
