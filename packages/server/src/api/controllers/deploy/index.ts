@@ -7,7 +7,7 @@ import {
   enableCronTrigger,
 } from "../../../automations/utils"
 import { backups } from "@budibase/pro"
-import { AppBackupTrigger } from "@budibase/types"
+import { App, AppBackupTrigger } from "@budibase/types"
 import sdk from "../../../sdk"
 import { builderSocket } from "../../../websockets"
 
@@ -44,7 +44,7 @@ async function storeDeploymentHistory(deployment: any) {
   let deploymentDoc
   try {
     // theres only one deployment doc per app database
-    deploymentDoc = await db.get(DocumentType.DEPLOYMENTS)
+    deploymentDoc = await db.get<any>(DocumentType.DEPLOYMENTS)
   } catch (err) {
     deploymentDoc = { _id: DocumentType.DEPLOYMENTS, history: {} }
   }
@@ -77,18 +77,19 @@ async function initDeployedApp(prodAppId: any) {
     )
   ).rows.map((row: any) => row.doc)
   await clearMetadata()
-  console.log("You have " + automations.length + " automations")
+  const { count } = await disableAllCrons(prodAppId)
   const promises = []
-  console.log("Disabling prod crons..")
-  await disableAllCrons(prodAppId)
-  console.log("Prod Cron triggers disabled..")
-  console.log("Enabling cron triggers for deployed app..")
   for (let automation of automations) {
     promises.push(enableCronTrigger(prodAppId, automation))
   }
-  await Promise.all(promises)
-  console.log("Enabled cron triggers for deployed app..")
-  // sync the automations back to the dev DB - since there is now cron
+  const results = await Promise.all(promises)
+  const enabledCount = results
+    .map(result => result.enabled)
+    .filter(result => result).length
+  console.log(
+    `Cleared ${count} old CRON, enabled ${enabledCount} new CRON triggers for app deployment`
+  )
+  // sync the automations back to the dev DB - since there is now CRON
   // information attached
   await sdk.applications.syncApp(dbCore.getDevAppID(prodAppId), {
     automationOnly: true,
@@ -113,7 +114,7 @@ export async function fetchDeployments(ctx: any) {
 export async function deploymentProgress(ctx: any) {
   try {
     const db = context.getAppDB()
-    const deploymentDoc = await db.get(DocumentType.DEPLOYMENTS)
+    const deploymentDoc = await db.get<any>(DocumentType.DEPLOYMENTS)
     ctx.body = deploymentDoc[ctx.params.deploymentId]
   } catch (err) {
     ctx.throw(
@@ -165,9 +166,9 @@ export const publishApp = async function (ctx: any) {
     // app metadata is excluded as it is likely to be in conflict
     // replicate the app metadata document manually
     const db = context.getProdAppDB()
-    const appDoc = await devDb.get(DocumentType.APP_METADATA)
+    const appDoc = await devDb.get<App>(DocumentType.APP_METADATA)
     try {
-      const prodAppDoc = await db.get(DocumentType.APP_METADATA)
+      const prodAppDoc = await db.get<App>(DocumentType.APP_METADATA)
       appDoc._rev = prodAppDoc._rev
     } catch (err) {
       delete appDoc._rev

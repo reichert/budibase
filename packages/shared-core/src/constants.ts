@@ -76,8 +76,8 @@ export enum SocketEvent {
 
 export enum GridSocketEvent {
   RowChange = "RowChange",
-  TableChange = "TableChange",
-  SelectTable = "SelectTable",
+  DatasourceChange = "DatasourceChange",
+  SelectDatasource = "SelectDatasource",
   SelectCell = "SelectCell",
 }
 
@@ -90,6 +90,9 @@ export enum BuilderSocketEvent {
   AppMetadataChange = "AppMetadataChange",
   SelectResource = "SelectResource",
   AppPublishChange = "AppPublishChange",
+  AutomationChange = "AutomationChange",
 }
 
 export const SocketSessionTTL = 60
+export const ValidQueryNameRegex = /^[^()]*$/
+export const ValidColumnNameRegex = /^[_a-zA-Z0-9\s]*$/g

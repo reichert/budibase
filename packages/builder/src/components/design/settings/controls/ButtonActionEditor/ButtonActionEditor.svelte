@@ -13,6 +13,7 @@
   export let name
   export let bindings
   export let nested
+  export let componentInstance
 
   let drawer
   let tmpValue
@@ -70,10 +71,11 @@
   } set`
 </script>
 
-<div class="action-count">{actionText}</div>
-<ActionButton on:click={openDrawer}>Define actions</ActionButton>
+<div class="action-editor">
+  <ActionButton on:click={openDrawer}>{actionText}</ActionButton>
+</div>
 
-<Drawer bind:this={drawer} title={"Actions"}>
+<Drawer bind:this={drawer} title={"Actions"} on:drawerHide on:drawerShow>
   <svelte:fragment slot="description">
     Define what actions to run.
   </svelte:fragment>
@@ -85,13 +87,12 @@
     {bindings}
     {key}
     {nested}
+    {componentInstance}
   />
 </Drawer>
 
 <style>
-  .action-count {
-    padding-top: 6px;
-    padding-bottom: var(--spacing-s);
-    font-weight: 600;
+  .action-editor :global(.spectrum-ActionButton) {
+    width: 100%;
   }
 </style>

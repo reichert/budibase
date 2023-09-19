@@ -23,6 +23,7 @@ import { buildTemplateEndpoints } from "./templates"
 import { buildUserEndpoints } from "./user"
 import { buildSelfEndpoints } from "./self"
 import { buildViewEndpoints } from "./views"
+import { buildViewV2Endpoints } from "./viewsV2"
 import { buildLicensingEndpoints } from "./licensing"
 import { buildGroupsEndpoints } from "./groups"
 import { buildPluginEndpoints } from "./plugins"
@@ -30,6 +31,7 @@ import { buildBackupsEndpoints } from "./backups"
 import { buildEnvironmentVariableEndpoints } from "./environmentVariables"
 import { buildEventEndpoints } from "./events"
 import { buildAuditLogsEndpoints } from "./auditLogs"
+import { buildLogsEndpoints } from "./logs"
 
 /**
  * Random identifier to uniquely identify a session in a tab. This is
@@ -277,5 +279,7 @@ export const createAPIClient = config => {
     ...buildEnvironmentVariableEndpoints(API),
     ...buildEventEndpoints(API),
     ...buildAuditLogsEndpoints(API),
+    ...buildLogsEndpoints(API),
+    viewV2: buildViewV2Endpoints(API),
   }
 }

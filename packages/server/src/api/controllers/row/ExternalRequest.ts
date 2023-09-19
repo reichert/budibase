@@ -1,4 +1,5 @@
 import {
+  AutoReason,
   Datasource,
   FieldSchema,
   FieldType,
@@ -7,7 +8,7 @@ import {
   Operation,
   PaginationJson,
   RelationshipsJson,
-  RelationshipTypes,
+  RelationshipType,
   Row,
   SearchFilters,
   SortJson,
@@ -23,14 +24,13 @@ import {
   isRowId,
   isSQL,
 } from "../../../integrations/utils"
-import { getDatasourceAndQuery } from "./utils"
-import { FieldTypes } from "../../../constants"
+import { getDatasourceAndQuery } from "../../../sdk/app/rows/utils"
+import { AutoFieldSubTypes, FieldTypes } from "../../../constants"
 import { processObjectSync } from "@budibase/string-templates"
 import { cloneDeep } from "lodash/fp"
 import { processDates, processFormulas } from "../../../utilities/rowProcessor"
 import { db as dbCore } from "@budibase/backend-core"
 import sdk from "../../../sdk"
-import { isEditableColumn } from "../../../sdk/app/tables/validation"
 
 export interface ManyRelationship {
   tableId?: string
@@ -164,7 +164,7 @@ function generateIdForRow(
       fieldName: field,
       isLinked,
     })
-    if (fieldValue) {
+    if (fieldValue != null) {
       idParts.push(fieldValue)
     }
   }
@@ -260,6 +260,15 @@ function isOneSide(field: FieldSchema) {
   )
 }
 
+function isEditableColumn(column: FieldSchema) {
+  const isExternalAutoColumn =
+    column.autocolumn &&
+    column.autoReason !== AutoReason.FOREIGN_KEY &&
+    column.subtype !== AutoFieldSubTypes.AUTO_ID
+  const isFormula = column.type === FieldTypes.FORMULA
+  return !(isExternalAutoColumn || isFormula)
+}
+
 export class ExternalRequest {
   private operation: Operation
   private tableId: string
@@ -296,11 +305,7 @@ export class ExternalRequest {
       manyRelationships: ManyRelationship[] = []
     for (let [key, field] of Object.entries(table.schema)) {
       // if set already, or not set just skip it
-      if (
-        row[key] == null ||
-        newRow[key] ||
-        !sdk.tables.isEditableColumn(field)
-      ) {
+      if (row[key] == null || newRow[key] || !isEditableColumn(field)) {
         continue
       }
       // if its an empty string then it means return the column to null (if possible)
@@ -578,7 +583,7 @@ export class ExternalRequest {
       ) {
         continue
       }
-      const isMany = field.relationshipType === RelationshipTypes.MANY_TO_MANY
+      const isMany = field.relationshipType === RelationshipType.MANY_TO_MANY
       const tableId = isMany ? field.through : field.tableId
       const { tableName: relatedTableName } = breakExternalTableId(tableId)
       // @ts-ignore

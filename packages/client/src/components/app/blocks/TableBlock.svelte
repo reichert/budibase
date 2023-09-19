@@ -30,6 +30,7 @@
   export let sidePanelShowDelete
   export let sidePanelSaveLabel
   export let sidePanelDeleteLabel
+  export let notificationOverride
 
   const { fetchDatasourceSchema, API } = getContext("sdk")
   const stateKey = `ID_${generate()}`
@@ -44,6 +45,9 @@
   let enrichedSearchColumns
   let schemaLoaded = false
 
+  // Accommodate old config to ensure delete button does not reappear
+  $: deleteLabel = sidePanelShowDelete === false ? "" : sidePanelDeleteLabel
+  $: isDSPlus = dataSource?.type === "table" || dataSource?.type === "viewV2"
   $: fetchSchema(dataSource)
   $: enrichSearchColumns(searchColumns, schema).then(
     val => (enrichedSearchColumns = val)
@@ -52,7 +56,7 @@
   $: editTitle = getEditTitle(detailsFormBlockId, primaryDisplay)
   $: normalFields = getNormalFields(schema)
   $: rowClickActions =
-    clickBehaviour === "actions" || dataSource?.type !== "table"
+    clickBehaviour === "actions" || !isDSPlus
       ? onClick
       : [
           {
@@ -74,7 +78,7 @@
           },
         ]
   $: buttonClickActions =
-    titleButtonClickBehaviour === "actions" || dataSource?.type !== "table"
+    titleButtonClickBehaviour === "actions" || !isDSPlus
       ? onClickTitleButton
       : [
           {
@@ -169,7 +173,7 @@
             order={1}
           >
             {#if enrichedSearchColumns?.length}
-              {#each enrichedSearchColumns as column, idx}
+              {#each enrichedSearchColumns as column, idx (column.name)}
                 <BlockComponent
                   type={column.componentType}
                   props={{
@@ -244,15 +248,14 @@
             bind:id={detailsFormBlockId}
             props={{
               dataSource,
-              showSaveButton: true,
-              showDeleteButton: sidePanelShowDelete,
-              saveButtonLabel: sidePanelSaveLabel,
-              deleteButtonLabel: sidePanelDeleteLabel,
+              saveButtonLabel: sidePanelSaveLabel || "Save", //always show
+              deleteButtonLabel: deleteLabel, //respect config
               actionType: "Update",
               rowId: `{{ ${safe("state")}.${safe(stateKey)} }}`,
               fields: sidePanelFields || normalFields,
               title: editTitle,
               labelPosition: "left",
+              notificationOverride,
             }}
           />
         </BlockComponent>
@@ -272,11 +275,12 @@
               dataSource,
               showSaveButton: true,
               showDeleteButton: false,
-              saveButtonLabel: sidePanelSaveLabel,
+              saveButtonLabel: sidePanelSaveLabel || "Save", //always show
               actionType: "Create",
               fields: sidePanelFields || normalFields,
               title: "Create Row",
               labelPosition: "left",
+              notificationOverride,
             }}
           />
         </BlockComponent>

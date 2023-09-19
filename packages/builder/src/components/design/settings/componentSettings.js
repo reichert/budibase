@@ -1,4 +1,4 @@
-import { Checkbox, Select, RadioGroup, Stepper } from "@budibase/bbui"
+import { Checkbox, Select, RadioGroup, Stepper, Input } from "@budibase/bbui"
 import DataSourceSelect from "./controls/DataSourceSelect.svelte"
 import S3DataSourceSelect from "./controls/S3DataSourceSelect.svelte"
 import DataProviderSelect from "./controls/DataProviderSelect.svelte"
@@ -23,6 +23,7 @@ import BasicColumnEditor from "./controls/ColumnEditor/BasicColumnEditor.svelte"
 import GridColumnEditor from "./controls/ColumnEditor/GridColumnEditor.svelte"
 import BarButtonList from "./controls/BarButtonList.svelte"
 import FieldConfiguration from "./controls/FieldConfiguration/FieldConfiguration.svelte"
+import RelationshipFilterEditor from "./controls/RelationshipFilterEditor.svelte"
 
 const componentMap = {
   text: DrawerBindableInput,
@@ -44,6 +45,7 @@ const componentMap = {
   schema: SchemaSelect,
   section: SectionSelect,
   filter: FilterEditor,
+  "filter/relationship": RelationshipFilterEditor,
   url: URLSelect,
   fieldConfiguration: FieldConfiguration,
   columns: ColumnEditor,
@@ -52,11 +54,13 @@ const componentMap = {
   "field/sortable": SortableFieldSelect,
   "field/string": FormFieldSelect,
   "field/number": FormFieldSelect,
+  "field/bigint": FormFieldSelect,
   "field/options": FormFieldSelect,
   "field/boolean": FormFieldSelect,
   "field/longform": FormFieldSelect,
   "field/datetime": FormFieldSelect,
   "field/attachment": FormFieldSelect,
+  "field/s3": Input,
   "field/link": FormFieldSelect,
   "field/array": FormFieldSelect,
   "field/json": FormFieldSelect,

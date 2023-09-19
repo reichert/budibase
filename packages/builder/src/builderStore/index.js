@@ -4,7 +4,7 @@ import { getTemporalStore } from "./store/temporal"
 import { getThemeStore } from "./store/theme"
 import { getUserStore } from "./store/users"
 import { getDeploymentStore } from "./store/deployments"
-import { derived } from "svelte/store"
+import { derived, writable } from "svelte/store"
 import { findComponent, findComponentPath } from "./componentUtils"
 import { RoleUtils } from "@budibase/frontend-core"
 import { createHistoryStore } from "builderStore/store/history"
@@ -61,6 +61,12 @@ export const selectedLayout = derived(store, $store => {
 export const selectedComponent = derived(
   [store, selectedScreen],
   ([$store, $selectedScreen]) => {
+    if (
+      $selectedScreen &&
+      $store.selectedComponentId?.startsWith(`${$selectedScreen._id}-`)
+    ) {
+      return $selectedScreen?.props
+    }
     if (!$selectedScreen || !$store.selectedComponentId) {
       return null
     }
@@ -127,13 +133,19 @@ export const selectedAutomation = derived(automationStore, $automationStore => {
 export const userSelectedResourceMap = derived(userStore, $userStore => {
   let map = {}
   $userStore.forEach(user => {
-    if (user.builderMetadata?.selectedResourceId) {
-      map[user.builderMetadata?.selectedResourceId] = user
+    const resource = user.builderMetadata?.selectedResourceId
+    if (resource) {
+      if (!map[resource]) {
+        map[resource] = []
+      }
+      map[resource].push(user)
     }
   })
   return map
 })
 
 export const isOnlyUser = derived(userStore, $userStore => {
-  return $userStore.length === 1
+  return $userStore.length < 2
 })
+
+export const screensHeight = writable("210px")

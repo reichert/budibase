@@ -1,14 +1,20 @@
 import * as internal from "./internal"
 import * as external from "./external"
 import {
-  validate as validateSchema,
-  isSchema,
   isRows,
+  isSchema,
+  validate as validateSchema,
 } from "../../../utilities/schema"
 import { isExternalTable, isSQL } from "../../../integrations/utils"
-import { getDatasourceParams } from "../../../db/utils"
-import { context, events } from "@budibase/backend-core"
-import { Table, UserCtx } from "@budibase/types"
+import { events } from "@budibase/backend-core"
+import {
+  FetchTablesResponse,
+  SaveTableRequest,
+  SaveTableResponse,
+  Table,
+  TableResponse,
+  UserCtx,
+} from "@budibase/types"
 import sdk from "../../../sdk"
 import { jsonFromCsvString } from "../../../utilities/csv"
 import { builderSocket } from "../../../websockets"
@@ -26,40 +32,36 @@ function pickApi({ tableId, table }: { tableId?: string; table?: Table }) {
 }
 
 // covers both internal and external
-export async function fetch(ctx: UserCtx) {
-  const db = context.getAppDB()
-
+export async function fetch(ctx: UserCtx<void, FetchTablesResponse>) {
   const internal = await sdk.tables.getAllInternalTables()
 
-  const externalTables = await db.allDocs(
-    getDatasourceParams("plus", {
-      include_docs: true,
-    })
-  )
+  const externalTables = await sdk.datasources.getExternalDatasources()
 
-  const external = externalTables.rows.flatMap(tableDoc => {
-    let entities = tableDoc.doc.entities
+  const external = externalTables.flatMap(table => {
+    let entities = table.entities
     if (entities) {
-      return Object.values(entities).map((entity: any) => ({
+      return Object.values(entities).map<Table>((entity: Table) => ({
         ...entity,
         type: "external",
-        sourceId: tableDoc.doc._id,
-        sql: isSQL(tableDoc.doc),
+        sourceId: table._id,
+        sql: isSQL(table),
       }))
     } else {
       return []
     }
   })
 
-  ctx.body = [...internal, ...external]
+  ctx.body = [...internal, ...external].map(sdk.tables.enrichViewSchemas)
 }
 
-export async function find(ctx: UserCtx) {
+export async function find(ctx: UserCtx<void, TableResponse>) {
   const tableId = ctx.params.tableId
-  ctx.body = await sdk.tables.getTable(tableId)
+  const table = await sdk.tables.getTable(tableId)
+
+  ctx.body = sdk.tables.enrichViewSchemas(table)
 }
 
-export async function save(ctx: UserCtx) {
+export async function save(ctx: UserCtx<SaveTableRequest, SaveTableResponse>) {
   const appId = ctx.appId
   const table = ctx.request.body
   const isImport = table.rows
@@ -76,9 +78,9 @@ export async function save(ctx: UserCtx) {
   ctx.status = 200
   ctx.message = `Table ${table.name} saved successfully.`
   ctx.eventEmitter &&
-    ctx.eventEmitter.emitTable(`table:save`, appId, savedTable)
+    ctx.eventEmitter.emitTable(`table:save`, appId, { ...savedTable })
   ctx.body = savedTable
-  builderSocket?.emitTableUpdate(ctx, savedTable)
+  builderSocket?.emitTableUpdate(ctx, { ...savedTable })
 }
 
 export async function destroy(ctx: UserCtx) {
@@ -91,7 +93,7 @@ export async function destroy(ctx: UserCtx) {
   ctx.status = 200
   ctx.table = deletedTable
   ctx.body = { message: `Table ${tableId} deleted.` }
-  builderSocket?.emitTableDeletion(ctx, tableId)
+  builderSocket?.emitTableDeletion(ctx, deletedTable)
 }
 
 export async function bulkImport(ctx: UserCtx) {

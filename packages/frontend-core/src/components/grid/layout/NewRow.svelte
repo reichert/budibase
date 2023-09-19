@@ -1,6 +1,6 @@
 <script>
   import { getContext, onDestroy, onMount, tick } from "svelte"
-  import { Icon, Button } from "@budibase/bbui"
+  import { Icon, Button, TempTooltip, TooltipType } from "@budibase/bbui"
   import GridScrollWrapper from "./GridScrollWrapper.svelte"
   import DataCell from "../cells/DataCell.svelte"
   import { fade } from "svelte/transition"
@@ -17,7 +17,7 @@
     dispatch,
     rows,
     focusedCellAPI,
-    tableId,
+    datasource,
     subscribe,
     renderedRows,
     renderedColumns,
@@ -27,6 +27,7 @@
     rowVerticalInversionIndex,
     columnHorizontalInversionIndex,
     selectedRows,
+    loading,
     config,
   } = getContext("grid")
 
@@ -37,9 +38,10 @@
 
   $: firstColumn = $stickyColumn || $renderedColumns[0]
   $: width = GutterWidth + ($stickyColumn?.width || 0)
-  $: $tableId, (visible = false)
+  $: $datasource, (visible = false)
   $: invertY = shouldInvertY(offset, $rowVerticalInversionIndex, $renderedRows)
   $: selectedRowCount = Object.values($selectedRows).length
+  $: hasNoRows = !$rows.length
 
   const shouldInvertY = (offset, inversionIndex, rows) => {
     if (offset === 0) {
@@ -118,8 +120,8 @@
     document.addEventListener("keydown", handleKeyPress)
   }
 
-  const updateValue = (rowId, columnName, val) => {
-    newRow[columnName] = val
+  const updateValue = ({ column, value }) => {
+    newRow[column] = value
   }
 
   const addViaModal = () => {
@@ -147,16 +149,22 @@
 </script>
 
 <!-- New row FAB -->
-{#if !visible && !selectedRowCount && $config.allowAddRows && firstColumn}
-  <div
-    class="new-row-fab"
-    on:click={() => dispatch("add-row-inline")}
-    transition:fade|local={{ duration: 130 }}
-    class:offset={!$stickyColumn}
-  >
-    <Icon name="Add" size="S" />
-  </div>
-{/if}
+<TempTooltip
+  text="Click here to create your first row"
+  condition={hasNoRows && !$loading}
+  type={TooltipType.Info}
+>
+  {#if !visible && !selectedRowCount && $config.canAddRows}
+    <div
+      class="new-row-fab"
+      on:click={() => dispatch("add-row-inline")}
+      transition:fade|local={{ duration: 130 }}
+      class:offset={!$stickyColumn}
+    >
+      <Icon name="Add" size="S" />
+    </div>
+  {/if}
+</TempTooltip>
 
 <!-- Only show new row functionality if we have any columns -->
 {#if visible}

@@ -30,6 +30,7 @@ import {
   objectStore,
   roles,
   tenancy,
+  users,
 } from "@budibase/backend-core"
 import { USERS_TABLE_SCHEMA } from "../../constants"
 import {
@@ -50,6 +51,7 @@ import {
   PlanType,
   Screen,
   UserCtx,
+  ContextUser,
 } from "@budibase/types"
 import { BASE_LAYOUT_PROP_IDS } from "../../constants/layouts"
 import sdk from "../../sdk"
@@ -176,28 +178,10 @@ export const addSampleData = async (ctx: UserCtx) => {
 }
 
 export async function fetch(ctx: UserCtx) {
-  const dev = ctx.query && ctx.query.status === AppStatus.DEV
-  const all = ctx.query && ctx.query.status === AppStatus.ALL
-  const apps = (await dbCore.getAllApps({ dev, all })) as App[]
-
-  const appIds = apps
-    .filter((app: any) => app.status === "development")
-    .map((app: any) => app.appId)
-  // get the locks for all the dev apps
-  if (dev || all) {
-    const locks = await getLocksById(appIds)
-    for (let app of apps) {
-      const lock = locks[app.appId]
-      if (lock) {
-        app.lockedBy = lock
-      } else {
-        // make sure its definitely not present
-        delete app.lockedBy
-      }
-    }
-  }
-
-  ctx.body = await checkAppMetadata(apps)
+  ctx.body = await sdk.applications.fetch(
+    ctx.query.status as AppStatus,
+    ctx.user
+  )
 }
 
 export async function fetchAppDefinition(ctx: UserCtx) {
@@ -217,7 +201,8 @@ export async function fetchAppDefinition(ctx: UserCtx) {
 
 export async function fetchAppPackage(ctx: UserCtx) {
   const db = context.getAppDB()
-  let application = await db.get(DocumentType.APP_METADATA)
+  const appId = context.getAppId()
+  let application = await db.get<any>(DocumentType.APP_METADATA)
   const layouts = await getLayouts()
   let screens = await getScreens()
   const license = await licensing.cache.getCachedLicense()
@@ -228,7 +213,7 @@ export async function fetchAppPackage(ctx: UserCtx) {
   )
 
   // Only filter screens if the user is not a builder
-  if (!(ctx.user.builder && ctx.user.builder.global)) {
+  if (!users.isBuilder(ctx.user, appId)) {
     const userRoleId = getUserRoleId(ctx)
     const accessController = new roles.AccessController()
     screens = await accessController.checkScreensAccess(screens, userRoleId)
@@ -298,12 +283,7 @@ async function performAppCreate(ctx: UserCtx) {
         title: name,
         navWidth: "Large",
         navBackground: "var(--spectrum-global-color-gray-100)",
-        links: [
-          {
-            url: "/home",
-            text: "Home",
-          },
-        ],
+        links: [],
       },
       theme: "spectrum--light",
       customTheme: {
@@ -331,6 +311,11 @@ async function performAppCreate(ctx: UserCtx) {
           newApplication[key] = existing[key]
         }
       })
+
+      // Keep existing validation setting
+      if (!existing.features?.componentValidation) {
+        newApplication.features!.componentValidation = false
+      }
 
       // Migrate navigation settings and screens if required
       if (existing) {
@@ -453,7 +438,7 @@ export async function update(ctx: UserCtx) {
 export async function updateClient(ctx: UserCtx) {
   // Get current app version
   const db = context.getAppDB()
-  const application = await db.get(DocumentType.APP_METADATA)
+  const application = await db.get<App>(DocumentType.APP_METADATA)
   const currentVersion = application.version
 
   // Update client library and manifest
@@ -477,7 +462,7 @@ export async function updateClient(ctx: UserCtx) {
 export async function revertClient(ctx: UserCtx) {
   // Check app can be reverted
   const db = context.getAppDB()
-  const application = await db.get(DocumentType.APP_METADATA)
+  const application = await db.get<App>(DocumentType.APP_METADATA)
   if (!application.revertableVersion) {
     ctx.throw(400, "There is no version to revert to")
   }
@@ -530,7 +515,7 @@ async function destroyApp(ctx: UserCtx) {
 
   const db = dbCore.getDB(devAppId)
   // standard app deletion flow
-  const app = await db.get(DocumentType.APP_METADATA)
+  const app = await db.get<App>(DocumentType.APP_METADATA)
   const result = await db.destroy()
   await quotas.removeApp()
   await events.app.deleted(app)
@@ -593,7 +578,7 @@ export async function sync(ctx: UserCtx) {
 export async function updateAppPackage(appPackage: any, appId: any) {
   return context.doInAppContext(appId, async () => {
     const db = context.getAppDB()
-    const application = await db.get(DocumentType.APP_METADATA)
+    const application = await db.get<App>(DocumentType.APP_METADATA)
 
     const newAppPackage = { ...application, ...appPackage }
     if (appPackage._rev !== application._rev) {

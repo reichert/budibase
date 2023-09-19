@@ -48,7 +48,6 @@ const SQL_STRING_TYPE_MAP = {
   blob: FieldTypes.STRING,
   long: FieldTypes.STRING,
   text: FieldTypes.STRING,
-  bigint: FieldTypes.STRING,
 }
 
 const SQL_BOOLEAN_TYPE_MAP = {
@@ -59,6 +58,7 @@ const SQL_BOOLEAN_TYPE_MAP = {
 
 const SQL_MISC_TYPE_MAP = {
   json: FieldTypes.JSON,
+  bigint: FieldTypes.BIGINT,
 }
 
 const SQL_TYPE_MAP = {
@@ -182,11 +182,12 @@ export function getSqlQuery(query: SqlQuery | string): SqlQuery {
 export const isSQL = helpers.isSQL
 
 export function isIsoDateString(str: string) {
-  if (!/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z/.test(str)) {
+  const trimmedValue = str.trim()
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z$/.test(trimmedValue)) {
     return false
   }
-  let d = new Date(str)
-  return d.toISOString() === str
+  let d = new Date(trimmedValue)
+  return d.toISOString() === trimmedValue
 }
 
 /**

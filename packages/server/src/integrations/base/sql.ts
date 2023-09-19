@@ -58,7 +58,7 @@ function parse(input: any) {
     return null
   }
   if (isIsoDateString(input)) {
-    return new Date(input)
+    return new Date(input.trim())
   }
   return input
 }
@@ -315,7 +315,7 @@ class InternalBuilder {
   addSorting(query: KnexQuery, json: QueryJson): KnexQuery {
     let { sort, paginate } = json
     const table = json.meta?.table
-    if (sort) {
+    if (sort && Object.keys(sort || {}).length > 0) {
       for (let [key, value] of Object.entries(sort)) {
         const direction =
           value.direction === SortDirection.ASCENDING ? "asc" : "desc"

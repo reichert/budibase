@@ -27,11 +27,13 @@
     if (datasource.source === IntegrationTypes.COUCHDB) {
       return datasource.config.database
     }
-    if (
-      datasource.source === IntegrationTypes.DYNAMODB ||
-      datasource.source === IntegrationTypes.S3
-    ) {
+    if (datasource.source === IntegrationTypes.DYNAMODB) {
       return `${datasource.config.endpoint}:${datasource.config.region}`
+    }
+    if (datasource.source === IntegrationTypes.S3) {
+      return datasource.config.endpoint
+        ? `${datasource.config.endpoint}:${datasource.config.region}`
+        : `s3.${datasource.config.region}.amazonaws.com`
     }
     if (datasource.source === IntegrationTypes.ELASTICSEARCH) {
       return datasource.config.url
@@ -74,11 +76,12 @@
     border: 1px solid var(--spectrum-global-color-gray-300);
     border-radius: 5px;
     width: 100%;
-    background-color: #00000047;
+    background: var(--spectrum-global-color-gray-50);
     color: white;
     overflow: hidden;
     padding: 12px 16px;
     box-sizing: border-box;
+    transition: background 130ms ease-out;
   }
   .left {
     flex: 1;
@@ -94,7 +97,7 @@
   }
   .button:hover {
     cursor: pointer;
-    filter: brightness(1.2);
+    background: var(--spectrum-global-color-gray-100);
   }
   .connected {
     display: flex;

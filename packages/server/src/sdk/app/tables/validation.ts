@@ -3,7 +3,7 @@ import {
   Datasource,
   FieldSchema,
   FieldType,
-  RelationshipTypes,
+  RelationshipType,
 } from "@budibase/types"
 import { FieldTypes } from "../../../constants"
 
@@ -19,14 +19,14 @@ function checkForeignKeysAreAutoColumns(datasource: Datasource) {
       column => column.type === FieldType.LINK
     )
     relationships.forEach(relationship => {
-      if (relationship.relationshipType === RelationshipTypes.MANY_TO_MANY) {
+      if (relationship.relationshipType === RelationshipType.MANY_TO_MANY) {
         const tableId = relationship.through!
         foreignKeys.push({ key: relationship.throughTo!, tableId })
         foreignKeys.push({ key: relationship.throughFrom!, tableId })
       } else {
         const fk = relationship.foreignKey!
         const oneSide =
-          relationship.relationshipType === RelationshipTypes.ONE_TO_MANY
+          relationship.relationshipType === RelationshipType.ONE_TO_MANY
         foreignKeys.push({
           tableId: oneSide ? table._id! : relationship.tableId!,
           key: fk,
@@ -53,13 +53,6 @@ function checkForeignKeysAreAutoColumns(datasource: Datasource) {
   }
 
   return datasource
-}
-
-export function isEditableColumn(column: FieldSchema) {
-  const isAutoColumn =
-    column.autocolumn && column.autoReason !== AutoReason.FOREIGN_KEY
-  const isFormula = column.type === FieldTypes.FORMULA
-  return !(isAutoColumn || isFormula)
 }
 
 export function populateExternalTableSchemas(datasource: Datasource) {

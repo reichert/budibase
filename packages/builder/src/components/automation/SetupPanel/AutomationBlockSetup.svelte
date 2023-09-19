@@ -15,6 +15,7 @@
     Icon,
     Checkbox,
     DatePicker,
+    Detail,
   } from "@budibase/bbui"
   import CreateWebhookModal from "components/automation/Shared/CreateWebhookModal.svelte"
   import { automationStore, selectedAutomation } from "builderStore"
@@ -32,13 +33,13 @@
   import CodeEditor from "components/common/CodeEditor/CodeEditor.svelte"
   import {
     bindingsToCompletions,
-    jsAutocomplete,
+    hbAutocomplete,
     EditorModes,
   } from "components/common/CodeEditor"
   import FilterDrawer from "components/design/settings/controls/FilterEditor/FilterDrawer.svelte"
   import { LuceneUtils } from "@budibase/frontend-core"
   import {
-    getSchemaForTable,
+    getSchemaForDatasourcePlus,
     getEnvironmentBindings,
   } from "builderStore/dataBinding"
   import { Utils } from "@budibase/frontend-core"
@@ -55,6 +56,7 @@
   let drawer
   let fillWidth = true
   let inputData
+  let codeBindingOpen = false
 
   $: filters = lookForFilters(schemaProperties) || []
   $: tempFilters = filters
@@ -65,11 +67,20 @@
   $: table = tableId
     ? $tables.list.find(table => table._id === inputData.tableId)
     : { schema: {} }
-  $: schema = getSchemaForTable(tableId, { searchableSchema: true }).schema
+  $: schema = getSchemaForDatasourcePlus(tableId, {
+    searchableSchema: true,
+  }).schema
   $: schemaFields = Object.values(schema || {})
   $: queryLimit = tableId?.includes("datasource") ? "∞" : "1000"
   $: isTrigger = block?.type === "TRIGGER"
   $: isUpdateRow = stepId === ActionStepID.UPDATE_ROW
+  $: codeMode =
+    stepId === "EXECUTE_BASH" ? EditorModes.Handlebars : EditorModes.JS
+
+  $: stepCompletions =
+    codeMode === EditorModes.Handlebars
+      ? [hbAutocomplete([...bindingsToCompletions(bindings, codeMode)])]
+      : []
 
   /**
    * TODO - Remove after November 2023
@@ -99,7 +110,10 @@
   /****************************************************/
 
   const getInputData = (testData, blockInputs) => {
-    let newInputData = testData || blockInputs
+    // Test data is not cloned for reactivity
+    let newInputData = testData || cloneDeep(blockInputs)
+
+    // Ensures the app action fields are populated
     if (block.event === "app:trigger" && !newInputData?.fields) {
       newInputData = cloneDeep(blockInputs)
     }
@@ -146,7 +160,7 @@
     // instead fetch the schema in the backend at runtime.
     let schema
     if (e.detail?.tableId) {
-      schema = getSchemaForTable(e.detail.tableId, {
+      schema = getSchemaForDatasourcePlus(e.detail.tableId, {
         searchableSchema: true,
       }).schema
     }
@@ -489,6 +503,18 @@
           />
         {:else if value.customType === "code"}
           <CodeEditorModal>
+            {#if codeMode == EditorModes.JS}
+              <ActionButton
+                on:click={() => (codeBindingOpen = !codeBindingOpen)}
+                quiet
+                icon={codeBindingOpen ? "ChevronDown" : "ChevronRight"}
+              >
+                <Detail size="S">Bindings</Detail>
+              </ActionButton>
+              {#if codeBindingOpen}
+                <pre>{JSON.stringify(bindings, null, 2)}</pre>
+              {/if}
+            {/if}
             <CodeEditor
               value={inputData[key]}
               on:change={e => {
@@ -496,19 +522,22 @@
                 onChange({ detail: e.detail }, key)
                 inputData[key] = e.detail
               }}
-              completions={[
-                jsAutocomplete([
-                  ...bindingsToCompletions(bindings, EditorModes.JS),
-                ]),
-              ]}
-              mode={EditorModes.JS}
+              completions={stepCompletions}
+              mode={codeMode}
+              autocompleteEnabled={codeMode != EditorModes.JS}
               height={500}
             />
             <div class="messaging">
-              <Icon name="FlashOn" />
-              <div class="messaging-wrap">
-                <div>Add available bindings by typing <strong>$</strong></div>
-              </div>
+              {#if codeMode == EditorModes.Handlebars}
+                <Icon name="FlashOn" />
+                <div class="messaging-wrap">
+                  <div>
+                    Add available bindings by typing <strong>
+                      &#125;&#125;
+                    </strong>
+                  </div>
+                </div>
+              {/if}
             </div>
           </CodeEditorModal>
         {:else if value.customType === "loopOption"}

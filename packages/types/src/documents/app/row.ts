@@ -15,6 +15,7 @@ export enum FieldType {
   JSON = "json",
   INTERNAL = "internal",
   BARCODEQR = "barcodeqr",
+  BIGINT = "bigint",
 }
 
 export interface RowAttachment {
@@ -29,5 +30,6 @@ export interface RowAttachment {
 export interface Row extends Document {
   type?: string
   tableId?: string
+  _viewId?: string
   [key: string]: any
 }
