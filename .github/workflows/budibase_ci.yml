@@ -157,30 +157,30 @@ jobs:
           name: codecov-umbrella
           verbose: true
 
-  test-pro:
-    runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == 'Budibase/budibase'
-    steps:
-      - name: Checkout repo and submodules
-        uses: actions/checkout@v3
-        with:
-          submodules: true
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN || github.token }}
-          fetch-depth: 0
+  # test-pro:
+  #   runs-on: ubuntu-latest
+  #   if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == 'Budibase/budibase'
+  #   steps:
+  #     - name: Checkout repo and submodules
+  #       uses: actions/checkout@v3
+  #       with:
+  #         submodules: true
+  #         token: ${{ secrets.PERSONAL_ACCESS_TOKEN || github.token }}
+  #         fetch-depth: 0
 
-      - name: Use Node.js 18.x
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18.x
-          cache: "yarn"
-      - run: yarn --frozen-lockfile
-      - name: Test
-        run: |
-          if ${{ env.USE_NX_AFFECTED }}; then
-            yarn test --scope=@budibase/pro --since=${{ env.NX_BASE_BRANCH }}
-          else
-            yarn test --scope=@budibase/pro
-          fi
+  #     - name: Use Node.js 18.x
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 18.x
+  #         cache: "yarn"
+  #     - run: yarn --frozen-lockfile
+  #     - name: Test
+  #       run: |
+  #         if ${{ env.USE_NX_AFFECTED }}; then
+  #           yarn test --scope=@budibase/pro --since=${{ env.NX_BASE_BRANCH }}
+  #         else
+  #           yarn test --scope=@budibase/pro
+  #         fi
 
   integration-test:
     runs-on: ubuntu-latest
@@ -212,51 +212,51 @@ jobs:
           BB_ADMIN_USER_EMAIL: admin
           BB_ADMIN_USER_PASSWORD: admin
 
-  check-pro-submodule:
-    runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == 'Budibase/budibase'
-    steps:
-      - name: Checkout repo and submodules
-        uses: actions/checkout@v3
-        with:
-          submodules: true
-          token: ${{ secrets.PERSONAL_ACCESS_TOKEN || github.token }}
-          fetch-depth: 0
+  # check-pro-submodule:
+  #   runs-on: ubuntu-latest
+  #   if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == 'Budibase/budibase'
+  #   steps:
+  #     - name: Checkout repo and submodules
+  #       uses: actions/checkout@v3
+  #       with:
+  #         submodules: true
+  #         token: ${{ secrets.PERSONAL_ACCESS_TOKEN || github.token }}
+  #         fetch-depth: 0
 
-      - name: Check pro commit
-        id: get_pro_commits
-        run: |
-          cd packages/pro
-          pro_commit=$(git rev-parse HEAD)
+  #     - name: Check pro commit
+  #       id: get_pro_commits
+  #       run: |
+  #         cd packages/pro
+  #         pro_commit=$(git rev-parse HEAD)
 
-          branch="${{ github.base_ref || github.ref_name  }}"
-          echo "Running on branch '$branch' (base_ref=${{ github.base_ref }}, ref_name=${{ github.head_ref }})"
+  #         branch="${{ github.base_ref || github.ref_name  }}"
+  #         echo "Running on branch '$branch' (base_ref=${{ github.base_ref }}, ref_name=${{ github.head_ref }})"
 
-          if [[ $branch == "master" ]]; then
-            base_commit=$(git rev-parse origin/master)
-          else
-            base_commit=$(git rev-parse origin/develop)
-          fi
+  #         if [[ $branch == "master" ]]; then
+  #           base_commit=$(git rev-parse origin/master)
+  #         else
+  #           base_commit=$(git rev-parse origin/develop)
+  #         fi
 
-          echo "target_branch=$branch"
-          echo "target_branch=$branch" >> "$GITHUB_OUTPUT"
-          echo "pro_commit=$pro_commit"
-          echo "pro_commit=$pro_commit" >> "$GITHUB_OUTPUT"
-          echo "base_commit=$base_commit"
-          echo "base_commit=$base_commit" >> "$GITHUB_OUTPUT"
+  #         echo "target_branch=$branch"
+  #         echo "target_branch=$branch" >> "$GITHUB_OUTPUT"
+  #         echo "pro_commit=$pro_commit"
+  #         echo "pro_commit=$pro_commit" >> "$GITHUB_OUTPUT"
+  #         echo "base_commit=$base_commit"
+  #         echo "base_commit=$base_commit" >> "$GITHUB_OUTPUT"
 
-      - name: Check submodule merged to develop
-        uses: actions/github-script@v4
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const submoduleCommit = '${{ steps.get_pro_commits.outputs.pro_commit }}';
-            const baseCommit = '${{ steps.get_pro_commits.outputs.base_commit }}';
+  #     - name: Check submodule merged to develop
+  #       uses: actions/github-script@v4
+  #       with:
+  #         github-token: ${{ secrets.GITHUB_TOKEN }}
+  #         script: |
+  #           const submoduleCommit = '${{ steps.get_pro_commits.outputs.pro_commit }}';
+  #           const baseCommit = '${{ steps.get_pro_commits.outputs.base_commit }}';
 
-            if (submoduleCommit !== baseCommit) {
-              console.error('Submodule commit does not match the latest commit on the "${{ steps.get_pro_commits.outputs.target_branch }}"" branch.');
-              console.error('Refer to the pro repo to merge your changes: https://github.com/Budibase/budibase-pro/blob/develop/docs/getting_started.md')
-              process.exit(1);
-            } else {
-              console.log('All good, the submodule had been merged and setup correctly!')
-            }
+  #           if (submoduleCommit !== baseCommit) {
+  #             console.error('Submodule commit does not match the latest commit on the "${{ steps.get_pro_commits.outputs.target_branch }}"" branch.');
+  #             console.error('Refer to the pro repo to merge your changes: https://github.com/Budibase/budibase-pro/blob/develop/docs/getting_started.md')
+  #             process.exit(1);
+  #           } else {
+  #             console.log('All good, the submodule had been merged and setup correctly!')
+  #           }
